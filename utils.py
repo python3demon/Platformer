@@ -47,10 +47,10 @@ def get_img_text(text, font_color=(255, 0, 0), font_antialias=True, font_text=No
     text_surface = font.render(text, font_antialias, font_color)
     return text_surface
 
-def output(screen, text, x, y, font_color=(255, 0, 0), font_antialias=True, font_text=None, font_size=36, width=800, height=600):
+def output(screen, text, x, y, font_color=(255, 0, 0), font_antialias=True, font_text=None, font_size=36, width=832, height=640):
     text_surface = get_img_text(text, font_color, font_antialias, font_text, font_size)
     if x == "senter":
         x = width // 2 - text_surface.get_width() // 2
     if y == "senter":
-        y = height//2-text_surface.get_height // 2
+        y = height//2-text_surface.get_height() // 2
     screen.blit(text_surface, (x, y))

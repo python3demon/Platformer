@@ -20,7 +20,7 @@ class Menu(GameState):
         self.margin = 25
         self.background = utils.load_img("assets/back_menu.png")
         self.buttons = pygame.sprite.Group()
-        senter_pos = utils.middle(width, height, 270, 80) # Для кнопок типо rectangle размер всегда 270x80
+        senter_pos = utils.middle(self.game_self.width, self.game_self.height, 270, 80) # Для кнопок типо rectangle размер всегда 270x80
 
         self.start_button = classes.Button("rectangle", (100, 100), "start", font_size=36, font_color=(0, 168, 120))
         self.start_button.rect.left, self.start_button.rect.top = senter_pos
@@ -50,8 +50,8 @@ class Menu(GameState):
         self.buttons.draw(screen)
 
 class LevelsMenu(GameState):
-    def __init__(self, game_state):
-        super().__init__(game_state)
+    def __init__(self, game_self):
+        super().__init__(game_self)
         self.margin_levels_x = 100
         self.buttons_levels = pygame.sprite.Group()
         for key in self.game_self.map_levels.keys():
@@ -68,7 +68,7 @@ class LevelsMenu(GameState):
                 if button.rect.collidepoint(event.pos):
                     self.game_self.platform.empty()
                     self.game_self.proris_map = False
-                    self.level = int(button.text)
+                    self.game_self.level = int(button.text)
                     self.game_self.player.reset()
                     self.next_state = "game"
 
@@ -90,22 +90,23 @@ class Gameplay(GameState):
                 self.next_state = "levels"
             elif event.key == pygame.K_RETURN and self.game_self.root:
                 utils.import_map(self.game_self.platform.sprites(), self.game_self.level)
-        elif event.type == pygame.MOUSEBUTTONDOWN and self.root:
+        elif event.type == pygame.MOUSEBUTTONDOWN and self.game_self.root:
             x, y = event.pos
             x = x // 64 * 64
             y = y // 64 * 64
 
             if event.button == 1:
-                self.game_self.platform.add(Floor((x, y)))
+                self.game_self.platform.add(classes.Floor((x, y)))
             elif event.button == 2:
                 all_floors = self.game_self.platform.sprites()
                 last_block = all_floors[-1]
                 self.game_self.platform.remove(last_block)
             else:
-                self.game_self.platform.add(Lava((x, y)))
+                self.game_self.platform.add(classes.Lava((x, y)))
 
     def update(self):
         if self.game_self.proris_map is False:
+            self.level_map = self.game_self.map_levels[self.game_self.level]
             floors = self.level_map["floor"]
             lavas = self.level_map["lava"] 
             for floor in floors:
@@ -114,6 +115,9 @@ class Gameplay(GameState):
                 self.game_self.platform.add(classes.Lava(lava))
             self.game_self.proris_map = True
 
+        if self.game_self.player.rect.top >= self.game_self.height:
+            self.game_self.player.reset()
+
     def draw(self, screen):
         screen.blit(self.sky, (0, 0))
         self.game_self.platform.draw(screen)
@@ -121,12 +125,15 @@ class Gameplay(GameState):
         screen.blit(self.game_self.player.image, self.game_self.player.rect)
 
 class SettingsMenu(GameState):
+    def handle_event(self, event):
+        if event.type == pygame.QUIT:
+            self.game_self.running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_q:
+                self.next_state = "menu"
     def draw(self, screen):
-        screen.fill((80, 50, 80))
-
-class ShopMenu(GameState):
-    def draw(self, screen):
-        screen.fill((80, 80, 50))
+        screen.fill((0, 0, 0))
+        utils.output(screen, "В разработке...", x="senter", y="senter", font_color="green")
 
 class Game:
     def __init__(self, width, height, FPS, caption):
@@ -149,7 +156,6 @@ class Game:
         self.states = {
             "menu": Menu(self),
             "levels": LevelsMenu(self),
-            "shop": ShopMenu(self),
             "settings": SettingsMenu(self),        
             "game":  Gameplay(self),
         }
