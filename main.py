@@ -1,26 +1,68 @@
 import pygame
-import utils
+import sys
 import classes
+import utils
 
 pygame.init()
-width, height = 832, 640
+WIDTH, HEIGHT = 832, 640
+CAPTION = "My Platformer"
+FPS = 60
 
-class GameState:
-    def __init__(self, game_self):
-        self.game_self = game_self
-        self.next_state = None
-    
+class GameConfig:
+    def __init__(self):
+        self.width, self.height = WIDTH, HEIGHT
+        self.caption = CAPTION
+        self.fps = FPS
+
+class Context:
+    def __init__(self, game_config):
+        """Контекст игры, здесь хранится все данные текущего сеанса"""
+        self.game_config = game_config
+        self.map_levels = utils.load_map()
+        self.skin = "danil"
+        self.root = True
+
+    def set_skin(self, skin_name):
+        self.skin = skin_name
+
+
+class State:
+    def __init__(self, manager, context):
+        """Абстрактный класс который опписывает атрибуты Всех существующих сцен"""
+        self.manager = manager
+        self.context = context
     def handle_event(self, event): pass
     def update(self): pass
     def draw(self, screen): pass
 
-class Menu(GameState):
-    def __init__(self, game_self):
-        super().__init__(game_self)
+class StateManager:
+    def __init__(self):
+        self.stack_state = []
+ 
+    def push(self, stage):
+        self.stack_state.append(stage)
+
+    def pop(self):
+        if len(self.stack_state) > 1:
+            self.stack_state.pop()
+    
+    def handle_event(self, event):
+        self.stack_state[-1].handle_event(event)
+    
+    def update(self):
+        self.stack_state[-1].update()
+    
+    def draw(self, screen):
+        self.stack_state[-1].draw(screen)
+
+
+class Menu(State):
+    def __init__(self, manager, context):
+        super().__init__(manager, context)
         self.margin = 25
         self.background = utils.load_img("assets/back_menu.png")
         self.buttons = pygame.sprite.Group()
-        senter_pos = utils.middle(self.game_self.width, self.game_self.height, 270, 80) # Для кнопок типо rectangle размер всегда 270x80
+        senter_pos = utils.middle(self.context.game_config.width, self.context.game_config.height, 270, 80) 
 
         self.start_button = classes.Button("rectangle", (100, 100), "start", font_size=36, font_color=(0, 168, 120))
         self.start_button.rect.left, self.start_button.rect.top = senter_pos
@@ -29,7 +71,7 @@ class Menu(GameState):
         self.settings_button = classes.Button("rectangle", (100, 100), "settings", font_size=36, font_color=(0, 168, 120))
         self.settings_button.rect.left, self.settings_button.rect.top = senter_pos
 
-        self.exit_button = classes.Button("rectangle", (100, 100), "EXIT", font_size=36, font_color=(0, 168, 120))
+        self.exit_button = classes.Button("rectangle", (100, 100), "Shop", font_size=36, font_color=(0, 168, 120))
         self.exit_button.rect.left, self.exit_button.rect.top = senter_pos
         self.exit_button.rect.top = self.exit_button.rect.top + self.exit_button.rect.height + self.margin
 
@@ -40,150 +82,128 @@ class Menu(GameState):
             for button in self.buttons:
                 if button.rect.collidepoint(event.pos):
                     if button.text == "start":
-                        self.next_state = "levels"
+                        self.manager.push(LevelsMenu(self.manager, self.context))
                     elif button.text == "settings":
-                        self.next_state = "settings"
-                    elif button.text == "EXIT":
-                        self.game_self.running = False # Тушим главный цикл напрямую!
+                        self.manager.push(SettingsMenu(self.manager, self.context))
+                    elif button.text == "Shop":
+                        pass
+                        #self.manager.push(Shop(self.manager, self.context))
+    
     def draw(self, screen):
         screen.blit(self.background, (0, 0))
         self.buttons.draw(screen)
 
-class LevelsMenu(GameState):
-    def __init__(self, game_self):
-        super().__init__(game_self)
+class LevelsMenu(State):
+    def __init__(self, manager, context):
+        super().__init__(manager, context)
         self.margin_levels_x = 100
         self.buttons_levels = pygame.sprite.Group()
-        for key in self.game_self.map_levels.keys():
+        for key in self.context.map_levels.keys():
             self.buttons_levels.add(classes.Button("rect", (self.margin_levels_x*key, 100), str(key)))
 
     def handle_event(self, event):
-        if event.type == pygame.QUIT:
-            self.game_self.running = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_q:
-                self.next_state = "menu"
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+            self.manager.pop()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             for button in self.buttons_levels:
                 if button.rect.collidepoint(event.pos):
-                    self.game_self.platform.empty()
-                    self.game_self.proris_map = False
-                    self.game_self.level = int(button.text)
-                    self.game_self.player.reset()
-                    self.next_state = "game"
+                    self.manager.push(Gameplay(self.manager, self.context, int(button.text)))
 
     def draw(self, screen):
         screen.fill((0, 0, 0))
         self.buttons_levels.draw(screen)
                 
-class Gameplay(GameState):
-    def __init__(self, game_self):
-        super().__init__(game_self)
+class Gameplay(State):
+    def __init__(self, manager, context, level):
+        super().__init__(manager, context)
+        self.level = level
         self.sky = utils.load_img("assets/sky.png")
-        self.level_map = self.game_self.map_levels[self.game_self.level]
+        self.platform = pygame.sprite.Group()
+        self.player = classes.Player("danil", "assets/danil.png", (0,0))
+        self.load_level()
 
     def handle_event(self, event):
-        if event.type == pygame.QUIT:
-            self.game_self.running = False
-        elif event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_q:
-                self.next_state = "levels"
-            elif event.key == pygame.K_RETURN and self.game_self.root:
-                utils.import_map(self.game_self.platform.sprites(), self.game_self.level)
-        elif event.type == pygame.MOUSEBUTTONDOWN and self.game_self.root:
+                self.manager.pop()
+            elif event.key == pygame.K_RETURN and self.context.root:
+                utils.import_map(self.platform.sprites(), self.level)
+        elif event.type == pygame.MOUSEBUTTONDOWN and self.context.root:
             x, y = event.pos
             x = x // 64 * 64
             y = y // 64 * 64
 
             if event.button == 1:
-                self.game_self.platform.add(classes.Floor((x, y)))
+                self.platform.add(classes.Floor((x, y)))
             elif event.button == 2:
-                all_floors = self.game_self.platform.sprites()
+                all_floors = self.platform.sprites()
                 last_block = all_floors[-1]
-                self.game_self.platform.remove(last_block)
+                self.platform.remove(last_block)
             else:
-                self.game_self.platform.add(classes.Lava((x, y)))
+                self.platform.add(classes.Lava((x, y)))
+
+    def load_level(self):
+        level_map = self.context.map_levels[self.level]
+        floors = level_map["floor"]
+        lavas = level_map["lava"] 
+        for floor in floors:
+            self.platform.add(classes.Floor(floor))
+        for lava in lavas:
+            self.platform.add(classes.Lava(lava))
 
     def update(self):
-        if self.game_self.proris_map is False:
-            self.level_map = self.game_self.map_levels[self.game_self.level]
-            floors = self.level_map["floor"]
-            lavas = self.level_map["lava"] 
-            for floor in floors:
-                self.game_self.platform.add(classes.Floor(floor))
-            for lava in lavas:
-                self.game_self.platform.add(classes.Lava(lava))
-            self.game_self.proris_map = True
-
-        if self.game_self.player.rect.top >= self.game_self.height:
-            self.game_self.player.reset()
+        if self.player.rect.top >= self.context.game_config.height:
+            self.player.reset()
+        self.player.update(self.platform)
 
     def draw(self, screen):
         screen.blit(self.sky, (0, 0))
-        self.game_self.platform.draw(screen)
-        self.game_self.player.update(self.game_self.platform)
-        screen.blit(self.game_self.player.image, self.game_self.player.rect)
+        self.platform.draw(screen)
+        screen.blit(self.player.image, self.player.rect)
 
-class SettingsMenu(GameState):
+class SettingsMenu(State):
+    def __init__(self, manager, context):
+        super().__init__(manager, context)
+
     def handle_event(self, event):
-        if event.type == pygame.QUIT:
-            self.game_self.running = False
-        elif event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_q:
-                self.next_state = "menu"
+                self.manager.pop()
     def draw(self, screen):
         screen.fill((0, 0, 0))
         utils.output(screen, "В разработке...", x="senter", y="senter", font_color="green")
 
 class Game:
-    def __init__(self, width, height, FPS, caption):
-        self.width = width
-        self.height = height
+    def __init__(self):
+        self.game_config = GameConfig()
+        self.width, self.height = self.game_config.width, self.game_config.height
+        self.caption = self.game_config.caption
+        self.fps = self.game_config.fps
         self.screen = pygame.display.set_mode((self.width, self.height))
-        self.caption = caption
         pygame.display.set_caption(self.caption)
-        self.FPS = FPS
-        self.clock = pygame.time.Clock()
+        self.clock = pygame.time.Clock()        
 
-        # GAMESTATE
-        self.player = classes.Player("danil", "assets/danil.png", (0, 0))
-        self.platform = pygame.sprite.Group()
-        self.map_levels = utils.load_map()
-        self.root = True
-        self.proris_map = False
+        self.context = Context(self.game_config)
+        self.state_manager = StateManager()
+        self.state_manager.push(Menu(self.state_manager, self.context))
 
-        self.level = 1
-        self.states = {
-            "menu": Menu(self),
-            "levels": LevelsMenu(self),
-            "settings": SettingsMenu(self),        
-            "game":  Gameplay(self),
-        }
-
-        self.current_state = self.states["menu"]
         self.running = True
 
-    def change_state(self):
-        if self.current_state.next_state is not None:
-            next_state_name = self.current_state.next_state
-            self.current_state.next_state = None
-            self.current_state = self.states[next_state_name]
-    
     def run(self):
         while self.running:
-            self.clock.tick(self.FPS)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                self.current_state.handle_event(event)
-            
-            self.current_state.update()
-            self.change_state()
-            self.current_state.draw(self.screen)
-           
+                self.state_manager.handle_event(event)
+
+            self.state_manager.update()
+            self.state_manager.draw(self.screen)
+
             pygame.display.flip()
+            self.clock.tick(self.fps)
+
         pygame.quit()
 
 if __name__ == "__main__":
-    game = Game(width=width, height=height, FPS=60, caption="My Platformer")
+    game = Game()
     game.run()
