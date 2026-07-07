@@ -6,7 +6,7 @@
 
 **Динамичный 2D-платформер с кучей уровней, монеток и скрытых отсылок!**
 
-[![Version 1.0.0](https://img.shields.io/badge/version-0.1.0-red.svg)](https://github.com/python3demon/Platformer)
+[![Version 1.0.0](https://img.shields.io/badge/version-0.2.0--alpha-orange.svg)](https://github.com/python3demon/Platformer)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg?logo=python&logoColor=white)](https://www.python.org/downloads/latest/python3.14/)
 [![Pygame 2.6.1](https://img.shields.io/badge/pygame-2.6.1-yellow.svg)](https://www.pygame.org/)
 [![Linux](https://img.shields.io/badge/platform-linux-A9A9A9.svg?logo=linux&logoColor=white)](https://linux.org)
@@ -33,12 +33,12 @@
 
 ### План разработки (To-Do):
 
-- [ ] **Полный рефакторинг архитектуры приложения (`v0.2.0-alpha`)**
+- [x] **Полный рефакторинг архитектуры приложения (`v0.2.0-alpha`)**
     - [x] Разработка базового прототипа интерфейса (меню, уровни, game)
     - [x] Перевод карты и игрока на сетку `64x64`
     - [x] Калибровка коллизий с лавой и прыжков
-    - [ ] Перенос процедурного кода из `main.py` в ООП-классы (Менеджер Стейтов)
-    - [ ] Избавление от глобальных переменных и изоляция логики сохранения
+    - [x] Перенос процедурного кода из `main.py` в ООП-классы (Менеджер Стейтов)
+    - [x] Избавление от глобальных переменных и изоляция логики сохранения
 - [ ] **Добавление базовых игровых механик (`v0.3.0-beta`)**
     - [ ] Смерть от падения в бездну (`player.rect.top >= height`)
     - [ ] Реализация плавного движения камеры (скроллинг экрана)
