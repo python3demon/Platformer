@@ -1,69 +1,86 @@
+from __future__ import annotations
 import pygame
 from utils import load_img, get_img_text, middle
 
 class Button(pygame.sprite.Sprite):
-    def __init__(self, type_button, pos, text, font_color=(255, 0, 0), font_antialias=True, font_text=None, font_size=36):
+    def __init__(
+            self,
+            type_button: str,
+            pos: tuple[int, int],
+            text: str,
+            font_color: tuple[int, int, int] | str| None = None,
+            font_antialias: bool = True,
+            font_text: str | None = None,
+            font_size: int = 36
+        ) -> None:
         super().__init__()
         
-        self.image = load_img(f"assets/{type_button}.png")
-        self.rect = pygame.Rect(*pos, *self.image.get_size())
-
+        self.image: pygame.Surface = load_img(f"assets/{type_button}.png")
+        self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
         self.text = text
-        self.text_image = get_img_text(self.text, font_color, font_antialias, font_text, font_size)
-        self.text_pos = middle(*self.rect.size, *self.text_image.get_size())
 
-        self.image.blit(self.text_image, self.text_pos)
+        color = font_color if font_color else (255, 0, 0)
+        text_image: pygame.Surface = get_img_text(self.text, color, font_antialias, font_text, font_size)
+        text_pos: tuple[int, int] = middle(*self.rect.size, *text_image.get_size())
+
+        self.image.blit(text_image, text_pos)
 
 class Block(pygame.sprite.Sprite):
-    def __init__(self, pos, type_block):
+    def __init__(self, pos: tuple[int, int], type_block: str) -> None:
         super().__init__()
-        self.type_block = type_block
-        self.image = load_img(f"assets/{type_block}.png")
-        self.rect = pygame.Rect(*pos, *self.image.get_size())
+        self.type_block: str = type_block
+        self.image: pygame.Surface = load_img(f"assets/{type_block}.png")
+        self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
 
 class Floor(Block):
-    def __init__(self, pos):
+    def __init__(self, pos: tuple[int, int]) -> None:
         super().__init__(pos, "floor")
 
 class Lava(Block):
-    def __init__(self, pos):
+    def __init__(self, pos: tuple[int, int]) -> None:
         super().__init__(pos, "lava")
         
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, name, path_to_img, pos, resize=(48, 96)):
+    def __init__(
+            self,
+            name: str,
+            path_to_img: str,
+            pos: tuple[int, int],
+            resize: tuple[int, int] = (48, 96)
+        ) -> None:
         super().__init__()
-        self.name = name
-        self.left_sprite = load_img(path_to_img, resize)
-        self.right_sprite = pygame.transform.flip(self.left_sprite, True, False)
-        self.image = self.left_sprite
-        self.rect = pygame.Rect(*pos, *self.image.get_size())
-        self.speed_x = 6
-        self.velocity_x = 0 # текущая скорость по оси X
-        self.velocity_y = 0 # текущая скорость по оси Y
-        self.gravity = 1
-        self.jump_power = -14
-        self.can_jump = True
+        self.name: str = name
+        self.left_sprite: pygame.Surface = load_img(path_to_img, resize)
+        self.right_sprite: pygame.Surface = pygame.transform.flip(self.left_sprite, True, False)
+        self.image: pygame.Surface = self.left_sprite
+        self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
+        self.speed_x: int = 6
+        self.velocity_x: int = 0 # текущая скорость по оси X
+        self.velocity_y: int = 0 # текущая скорость по оси Y
+        self.gravity: int = 1
+        self.jump_power: int = -14
+        self.can_jump: bool = True
 
-    def reset(self):
+    def reset(self) -> None:
         self.rect.left = 0
         self.rect.bottom = 100
 
-    def hits_lava(self, lava):
+    def hits_lava(self, lava: pygame.sprite.Group) -> bool:
         if pygame.sprite.spritecollide(self, lava, False):
             return True
         return False
 
-    def update(self, platform): 
-        floor = pygame.sprite.Group()
-        lava = pygame.sprite.Group()
+    def update(self, platform: pygame.sprite.Group) -> None:
+        floor: pygame.sprite.Group = pygame.sprite.Group()
+        lava: pygame.sprite.Group = pygame.sprite.Group()
 
         for block in platform:
             if block.type_block == "floor":
                 floor.add(block)
             else:
                 lava.add(block)
-        
+                
         keys = pygame.key.get_pressed()
 
         self.velocity_x = 0
