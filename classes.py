@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections.abc import Callable
 import pygame
 from utils import load_img, get_img_text, middle
 
@@ -8,22 +9,51 @@ class Button(pygame.sprite.Sprite):
             type_button: str,
             pos: tuple[int, int],
             text: str,
+            func: Callable,
             font_color: tuple[int, int, int] | str| None = None,
             font_antialias: bool = True,
             font_text: str | None = None,
             font_size: int = 36
         ) -> None:
         super().__init__()
-        
+        self.pos = pos
+        self.text = text
+        self.func = func
+
         self.image: pygame.Surface = load_img(f"assets/{type_button}.png")
         self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
-        self.text = text
 
-        color = font_color if font_color else (255, 0, 0)
-        text_image: pygame.Surface = get_img_text(self.text, color, font_antialias, font_text, font_size)
+        text_image: pygame.Surface = get_img_text(self.text, font_color, font_antialias, font_text, font_size)
         text_pos: tuple[int, int] = middle(*self.rect.size, *text_image.get_size())
 
+        # Наносит текст на поверхность картинки кнопки (в памяти, не на экране)
         self.image.blit(text_image, text_pos)
+        
+class MenuButton(Button):
+    def __init__(
+            self,
+            pos: tuple[int, int],
+            text: str,
+            func: Callable,
+            font_color: tuple[int, int, int] | str| None = (0, 168, 120),
+            font_antialias: bool = True,
+            font_text: str | None = None,
+            font_size: int = 36
+        ) -> None:
+        super().__init__("rectangle", pos, text, func, font_color, font_antialias, font_text, font_size)
+
+class LevelButton(Button):
+    def __init__(
+            self,
+            pos: tuple[int, int],
+            text: str,
+            func: Callable,
+            font_color: tuple[int, int, int] | str| None = None,
+            font_antialias: bool = True,
+            font_text: str | None = None,
+            font_size: int = 36
+        ) -> None:
+        super().__init__("rect", pos, text, func, font_color, font_antialias, font_text, font_size)
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, pos: tuple[int, int], type_block: str) -> None:

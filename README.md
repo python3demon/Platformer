@@ -6,7 +6,7 @@
 
 **Динамичный 2D-платформер с кучей уровней, монеток и скрытых отсылок!**
 
-[![Version 1.0.0](https://img.shields.io/badge/version-0.2.0--alpha-orange.svg)](https://github.com/python3demon/Platformer)
+[![Version 0.2.4](https://img.shields.io/badge/version-0.2.4-orange.svg)](https://github.com/python3demon/Platformer)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg?logo=python&logoColor=white)](https://www.python.org/downloads/latest/python3.14/)
 [![Pygame 2.6.1](https://img.shields.io/badge/pygame-2.6.1-yellow.svg)](https://www.pygame.org/)
 [![Linux](https://img.shields.io/badge/platform-linux-A9A9A9.svg?logo=linux&logoColor=white)](https://linux.org)
@@ -38,6 +38,7 @@
 - [x] Перенос процедурного кода из `main.py` в ООП-классы (Менеджер Стейтов) (`v0.2.2-alpha`)
 - [x] Избавление от глобальных переменных и изоляция логики сохранения (`v0.2.3-alpha`)
 - [x] Аннотация типов и рефакторинг структуры кода (`v0.2.4-alpha`)
+- [ ] Разделение ответственности между Player, Gameplay и UI (паттерн Dispatcher) (`v0.3.0-alpha`)
 - [ ] Смерть от падения в бездну (`player.rect.top >= height`) (`v0.2.5`)
 - [ ] Автоматический переход на следующий уровень при выходе за правый край (`v0.2.6`)
 

@@ -1,5 +1,9 @@
 from __future__ import annotations
+
+from typing import Callable
+
 import pygame
+
 import classes
 import utils
 
@@ -19,9 +23,11 @@ class Context:
     def __init__(self, game_config: GameConfig) -> None:
         """Контекст игры, здесь хранится все данные текущего сеанса"""
         self.game_config: GameConfig = game_config
-        self.map_levels: dict = utils.load_map()
+        self.map_levels: dict[int, dict] = utils.load_map()
         self.skin: str = "danil"
         self.root: bool = True
+        self.size_menu_button = (270, 80)
+        self.size_level_button = (60, 60)
 
     def set_skin(self, skin_name: str) -> None:
         self.skin = skin_name
@@ -45,20 +51,30 @@ class State:
 class StateManager:
     def __init__(self) -> None:
         self.stack_state: list[State] = []
- 
+    
+    @staticmethod
+    def check_stack(func):
+        def wrapper(self, *args, **kwargs):
+            if self.stack_state:
+                return func(self, *args, **kwargs)
+        return wrapper
+
     def push(self, state: State) -> None:
         self.stack_state.append(state)
 
+    @check_stack
     def pop(self) -> None:
-        if len(self.stack_state) > 1:
-            self.stack_state.pop()
+        self.stack_state.pop()
     
+    @check_stack
     def handle_event(self, event: pygame.event.Event) -> None:
         self.stack_state[-1].handle_event(event)
     
+    @check_stack
     def update(self) -> None:
         self.stack_state[-1].update()
     
+    @check_stack
     def draw(self, screen: pygame.Surface) -> None:
         self.stack_state[-1].draw(screen)
 
@@ -68,33 +84,30 @@ class Menu(State):
         super().__init__(manager, context)
         self.margin: int = 25
         self.background: pygame.Surface = utils.load_img("assets/back_menu.png")
-        self.buttons: pygame.sprite.Group = pygame.sprite.Group()
-        center_pos = utils.middle(self.context.game_config.width, self.context.game_config.height, 270, 80) 
+        self.buttons: pygame.sprite.Group[classes.MenuButton] = pygame.sprite.Group()
+        self.buttons_config: list[tuple[str, Callable]] = [
+            ("start", lambda: self.manager.push(LevelsMenu(self.manager, self.context))),
+            ("settings", lambda: self.manager.push(SettingsMenu(self.manager, self.context))),
+            ("Exit", lambda: self.manager.pop())
+        ]
 
-        self.start_button = classes.Button("rectangle", (100, 100), "start", font_size=36, font_color=(0, 168, 120))
-        self.start_button.rect.left, self.start_button.rect.top = center_pos
-        self.start_button.rect.top = self.start_button.rect.top - self.start_button.rect.height - self.margin
- 
-        self.settings_button = classes.Button("rectangle", (100, 100), "settings", font_size=36, font_color=(0, 168, 120))
-        self.settings_button.rect.left, self.settings_button.rect.top = center_pos
+        size_window: tuple[int, int] = self.context.game_config.width, self.context.game_config.height
+        size_button: tuple[int, int] = self.context.size_menu_button
+        y_offset: int = -(size_button[1] + self.margin)
+        for button in self.buttons_config:
+            self.buttons.add(classes.MenuButton(
+                (size_window[0] // 2 - size_button[0] // 2,
+                size_window[1] // 2 - size_button[1] // 2 + y_offset),
+                *button
+            ))
+            y_offset += size_button[1] + self.margin
 
-        self.exit_button = classes.Button("rectangle", (100, 100), "Shop", font_size=36, font_color=(0, 168, 120))
-        self.exit_button.rect.left, self.exit_button.rect.top = center_pos
-        self.exit_button.rect.top = self.exit_button.rect.top + self.exit_button.rect.height + self.margin
-
-        self.buttons.add(self.start_button, self.settings_button, self.exit_button)
- 
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for button in self.buttons:
                 if button.rect.collidepoint(event.pos):
-                    if button.text == "start":
-                        self.manager.push(LevelsMenu(self.manager, self.context))
-                    elif button.text == "settings":
-                        self.manager.push(SettingsMenu(self.manager, self.context))
-                    elif button.text == "Shop":
-                        pass
-    
+                    button.func()
+
     def draw(self, screen: pygame.Surface) -> None:
         screen.blit(self.background, (0, 0))
         self.buttons.draw(screen)
@@ -104,8 +117,15 @@ class LevelsMenu(State):
         super().__init__(manager, context)
         self.margin_levels_x: int = 100
         self.buttons_levels: pygame.sprite.Group = pygame.sprite.Group()
+        
         for key in self.context.map_levels.keys():
-            self.buttons_levels.add(classes.Button("rect", (self.margin_levels_x*key, 100), str(key)))
+            self.buttons_levels.add(
+                classes.LevelButton(
+                    (self.margin_levels_x*key, 100),
+                    str(key),
+                    lambda k=key: self.manager.push(Gameplay(self.manager, self.context, k))
+                )
+            )
 
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
@@ -113,7 +133,8 @@ class LevelsMenu(State):
         elif event.type == pygame.MOUSEBUTTONDOWN:
             for button in self.buttons_levels:
                 if button.rect.collidepoint(event.pos):
-                    self.manager.push(Gameplay(self.manager, self.context, int(button.text)))
+                    button.func()
+                    break
 
     def draw(self, screen: pygame.Surface) -> None:
         screen.fill((0, 0, 0))
@@ -201,7 +222,7 @@ class Game:
     def run(self) -> None:
         while self.running:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
+                if event.type == pygame.QUIT or len(self.state_manager.stack_state) == 0:
                     self.running = False
                 self.state_manager.handle_event(event)
 
@@ -210,8 +231,6 @@ class Game:
 
             pygame.display.flip()
             self.clock.tick(self.fps)
-
-        pygame.quit()
 
 if __name__ == "__main__":
     game = Game()
