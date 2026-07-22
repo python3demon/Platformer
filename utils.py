@@ -3,28 +3,25 @@ import json
 
 _IMAGE_CACHE = {}
 
-def load_map(file_name: str = "level_data.json") -> dict[int, dict]:
-    clear_map: dict[int, dict] = {}
+def load_map(file_name: str = "level_data.json") -> dict[str, dict]:
+    level_data: dict[str, dict] = {}
 
     try:
         with open(file_name, "r") as file:
-            level_map = json.load(file)
+            level_data = json.load(file)
     except FileNotFoundError:
-        clear_map = {
-            1: {
+        level_data = {
+            "1": {
                 "floor": [[0, 320], [64, 320], [128, 320], [192, 320], [256, 320], [320, 320], [384, 320], [448, 320]], 
                 "lava": [[256, 320]]
             }
         }
-    else:
-        for key, value in level_map.items():
-            clear_map[int(key)] = value
 
-    return clear_map
+    return level_data
 
-def import_map(platform: list, level: int, file_name: str = "level_data.json") -> None:
+def import_map(platform: list, level: str, file_name: str = "level_data.json") -> None:
     """Сохраняет отредактированную карту под номер level"""
-    level_map: dict[int, dict] = load_map()
+    level_map = load_map()
     level_map[level] = {"floor":[], "lava":[]}
 
     for block in platform:
@@ -43,7 +40,7 @@ def load_img(img_path: str, resize: tuple[int, int] | None = None) -> pygame.Sur
         if resize:
             img = pygame.transform.scale(img, resize)
         _IMAGE_CACHE[key] = img
-        
+
     return _IMAGE_CACHE[key]
 
 def middle(width: int, height: int, width2: int, height2: int) -> tuple[int, int]:

@@ -20,9 +20,9 @@ class Context:
     def __init__(self, game_config: GameConfig) -> None:
         """Контекст игры, здесь хранится все данные текущего сеанса"""
         self.game_config: GameConfig = game_config
-        self.map_levels: dict[int, dict] = utils.load_map()
-        self.skin: str = "danil"
-        self.root: bool = True
+        self.map_levels = utils.load_map()
+        self.skin = "danil"
+        self.root = True
         self.size_menu_button = (270, 80)
         self.size_level_button = (60, 60)
 
@@ -112,14 +112,14 @@ class Menu(State):
 class LevelsMenu(State):
     def __init__(self, manager: StateManager, context: Context) -> None:
         super().__init__(manager, context)
-        self.margin_levels_x: int = 100
-        self.buttons_levels: pygame.sprite.Group = pygame.sprite.Group()
+        self.margin_levels_x = 100
+        self.buttons_levels = pygame.sprite.Group()
         
         for key in self.context.map_levels.keys():
             self.buttons_levels.add(
                 classes.LevelButton(
-                    (self.margin_levels_x*key, 100),
-                    str(key),
+                    (self.margin_levels_x*int(key), 100),
+                    key,
                     lambda k=key: self.manager.push(Gameplay(self.manager, self.context, k))
                 )
             )
@@ -138,11 +138,11 @@ class LevelsMenu(State):
         self.buttons_levels.draw(screen)
                 
 class Gameplay(State):
-    def __init__(self, manager: StateManager, context: Context, level: int) -> None:
+    def __init__(self, manager: StateManager, context: Context, level: str) -> None:
         super().__init__(manager, context)
-        self.level: int = level
-        self.sky: pygame.Surface = utils.load_img("assets/sky.png")
-        self.platform: pygame.sprite.Group = pygame.sprite.Group()
+        self.level = level
+        self.sky = utils.load_img("assets/sky.png")
+        self.platform = pygame.sprite.Group()
         self.player = classes.Player("danil", "assets/danil.png", (0,0))
         self.load_level()
 
