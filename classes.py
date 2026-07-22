@@ -1,7 +1,8 @@
 from __future__ import annotations
-from collections.abc import Callable
+from typing import Callable
+
 import pygame
-from utils import load_img, get_img_text, middle
+import utils
 
 class Button(pygame.sprite.Sprite):
     def __init__(
@@ -20,11 +21,11 @@ class Button(pygame.sprite.Sprite):
         self.text = text
         self.func = func
 
-        self.image: pygame.Surface = load_img(f"assets/{type_button}.png").copy()
+        self.image: pygame.Surface = utils.load_img(f"assets/{type_button}.png").copy()
         self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
 
-        text_image: pygame.Surface = get_img_text(self.text, font_color, font_antialias, font_text, font_size)
-        text_pos: tuple[int, int] = middle(*self.rect.size, *text_image.get_size())
+        text_image: pygame.Surface = utils.get_img_text(self.text, font_color, font_antialias, font_text, font_size)
+        text_pos: tuple[int, int] = utils.middle(*self.rect.size, *text_image.get_size())
 
         # Наносит текст на поверхность картинки кнопки (в памяти, не на экране)
         self.image.blit(text_image, text_pos)
@@ -59,7 +60,7 @@ class Block(pygame.sprite.Sprite):
     def __init__(self, pos: tuple[int, int], type_block: str) -> None:
         super().__init__()
         self.type_block: str = type_block
-        self.image: pygame.Surface = load_img(f"assets/{type_block}.png")
+        self.image: pygame.Surface = utils.load_img(f"assets/{type_block}.png")
         self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
 
 class Floor(Block):
@@ -81,7 +82,7 @@ class Player(pygame.sprite.Sprite):
         ) -> None:
         super().__init__()
         self.name: str = name
-        self.left_sprite: pygame.Surface = load_img(path_to_img, resize)
+        self.left_sprite: pygame.Surface = utils.load_img(path_to_img, resize)
         self.right_sprite: pygame.Surface = pygame.transform.flip(self.left_sprite, True, False)
         self.image: pygame.Surface = self.left_sprite
         self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())

@@ -12,6 +12,8 @@ venv/
 ENV/
 env/
 
+test/
+
 # Сборка PyInstaller (папки, которые создаются при запуске вашего .bat скрипта)
 build/
 dist/
