@@ -1,6 +1,8 @@
 import pygame
 import json
 
+_IMAGE_CACHE = {}
+
 def load_map(file_name: str = "level_data.json") -> dict[int, dict]:
     clear_map: dict[int, dict] = {}
 
@@ -35,12 +37,14 @@ def import_map(platform: list, level: int, file_name: str = "level_data.json") -
         json.dump(level_map, file)
 
 def load_img(img_path: str, resize: tuple[int, int] | None = None) -> pygame.Surface:
-    img: pygame.Surface = pygame.image.load(img_path).convert_alpha()
-
-    if resize is not None:
-        img: pygame.Surface = pygame.transform.scale(img, resize)
-
-    return img
+    key = f"{img_path}_{resize}"
+    if key not in _IMAGE_CACHE:
+        img: pygame.Surface = pygame.image.load(img_path).convert_alpha()
+        if resize:
+            img = pygame.transform.scale(img, resize)
+        _IMAGE_CACHE[key] = img
+        
+    return _IMAGE_CACHE[key]
 
 def middle(width: int, height: int, width2: int, height2: int) -> tuple[int, int]:
     return (width//2-width2//2, height//2-height2//2)

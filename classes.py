@@ -20,7 +20,7 @@ class Button(pygame.sprite.Sprite):
         self.text = text
         self.func = func
 
-        self.image: pygame.Surface = load_img(f"assets/{type_button}.png")
+        self.image: pygame.Surface = load_img(f"assets/{type_button}.png").copy()
         self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
 
         text_image: pygame.Surface = get_img_text(self.text, font_color, font_antialias, font_text, font_size)
