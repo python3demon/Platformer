@@ -1,0 +1,575 @@
+diff --git a/classes.py b/classes.py
+index ae448c1..2be2a68 100644
+--- a/classes.py
++++ b/classes.py
+@@ -1,21 +1,24 @@
+ from __future__ import annotations
+-from typing import Callable
++
++from collections.abc import Callable
+ 
+ import pygame
++
+ import utils
+ 
++
+ class Button(pygame.sprite.Sprite):
+     def __init__(
+-            self,
+-            type_button: str,
+-            pos: tuple[int, int],
+-            text: str,
+-            func: Callable,
+-            font_color: tuple[int, int, int] | str| None = None,
+-            font_antialias: bool = True,
+-            font_text: str | None = None,
+-            font_size: int = 36
+-        ) -> None:
++        self,
++        type_button: str,
++        pos: tuple[int, int],
++        text: str,
++        func: Callable,
++        font_color: tuple[int, int, int] | str | None = None,
++        font_antialias: bool = True,
++        font_text: str | None = None,
++        font_size: int = 36,
++    ) -> None:
+         super().__init__()
+         self.pos = pos
+         self.text = text
+@@ -24,37 +27,55 @@ class Button(pygame.sprite.Sprite):
+         self.image: pygame.Surface = utils.load_img(f"assets/{type_button}.png").copy()
+         self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
+ 
+-        text_image: pygame.Surface = utils.get_img_text(self.text, font_color, font_antialias, font_text, font_size)
+-        text_pos: tuple[int, int] = utils.middle(*self.rect.size, *text_image.get_size())
++        text_image: pygame.Surface = utils.get_img_text(
++            self.text, font_color, font_antialias, font_text, font_size
++        )
++        text_pos: tuple[int, int] = utils.middle(
++            *self.rect.size, *text_image.get_size()
++        )
+ 
+         # Наносит текст на поверхность картинки кнопки (в памяти, не на экране)
+         self.image.blit(text_image, text_pos)
+-        
++
++
+ class MenuButton(Button):
+     def __init__(
+-            self,
+-            pos: tuple[int, int],
+-            text: str,
+-            func: Callable,
+-            font_color: tuple[int, int, int] | str| None = (0, 168, 120),
+-            font_antialias: bool = True,
+-            font_text: str | None = None,
+-            font_size: int = 36
+-        ) -> None:
+-        super().__init__("rectangle", pos, text, func, font_color, font_antialias, font_text, font_size)
++        self,
++        pos: tuple[int, int],
++        text: str,
++        func: Callable,
++        font_color: tuple[int, int, int] | str | None = (0, 168, 120),
++        font_antialias: bool = True,
++        font_text: str | None = None,
++        font_size: int = 36,
++    ) -> None:
++        super().__init__(
++            "rectangle",
++            pos,
++            text,
++            func,
++            font_color,
++            font_antialias,
++            font_text,
++            font_size,
++        )
++
+ 
+ class LevelButton(Button):
+     def __init__(
+-            self,
+-            pos: tuple[int, int],
+-            text: str,
+-            func: Callable,
+-            font_color: tuple[int, int, int] | str| None = None,
+-            font_antialias: bool = True,
+-            font_text: str | None = None,
+-            font_size: int = 36
+-        ) -> None:
+-        super().__init__("rect", pos, text, func, font_color, font_antialias, font_text, font_size)
++        self,
++        pos: tuple[int, int],
++        text: str,
++        func: Callable,
++        font_color: tuple[int, int, int] | str | None = None,
++        font_antialias: bool = True,
++        font_text: str | None = None,
++        font_size: int = 36,
++    ) -> None:
++        super().__init__(
++            "rect", pos, text, func, font_color, font_antialias, font_text, font_size
++        )
++
+ 
+ class Block(pygame.sprite.Sprite):
+     def __init__(self, pos: tuple[int, int], type_block: str) -> None:
+@@ -63,32 +84,36 @@ class Block(pygame.sprite.Sprite):
+         self.image: pygame.Surface = utils.load_img(f"assets/{type_block}.png")
+         self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
+ 
++
+ class Floor(Block):
+     def __init__(self, pos: tuple[int, int]) -> None:
+         super().__init__(pos, "floor")
+ 
++
+ class Lava(Block):
+     def __init__(self, pos: tuple[int, int]) -> None:
+         super().__init__(pos, "lava")
+-        
++
+ 
+ class Player(pygame.sprite.Sprite):
+     def __init__(
+-            self,
+-            name: str,
+-            path_to_img: str,
+-            pos: tuple[int, int],
+-            resize: tuple[int, int] = (48, 96)
+-        ) -> None:
++        self,
++        name: str,
++        path_to_img: str,
++        pos: tuple[int, int],
++        resize: tuple[int, int] = (48, 96),
++    ) -> None:
+         super().__init__()
+         self.name: str = name
+         self.left_sprite: pygame.Surface = utils.load_img(path_to_img, resize)
+-        self.right_sprite: pygame.Surface = pygame.transform.flip(self.left_sprite, True, False)
++        self.right_sprite: pygame.Surface = pygame.transform.flip(
++            self.left_sprite, True, False
++        )
+         self.image: pygame.Surface = self.left_sprite
+         self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
+         self.speed_x: int = 6
+-        self.velocity_x: int = 0 # текущая скорость по оси X
+-        self.velocity_y: int = 0 # текущая скорость по оси Y
++        self.velocity_x: int = 0  # текущая скорость по оси X
++        self.velocity_y: int = 0  # текущая скорость по оси Y
+         self.gravity: int = 1
+         self.jump_power: int = -14
+         self.can_jump: bool = True
+@@ -98,9 +123,7 @@ class Player(pygame.sprite.Sprite):
+         self.rect.bottom = 100
+ 
+     def hits_lava(self, lava: pygame.sprite.Group) -> bool:
+-        if pygame.sprite.spritecollide(self, lava, False):
+-            return True
+-        return False
++        return bool(pygame.sprite.spritecollide(self, lava, False))
+ 
+     def update(self, platform: pygame.sprite.Group) -> None:
+         floor: pygame.sprite.Group = pygame.sprite.Group()
+@@ -111,11 +134,11 @@ class Player(pygame.sprite.Sprite):
+                 floor.add(block)
+             else:
+                 lava.add(block)
+-                
++
+         keys = pygame.key.get_pressed()
+ 
+         self.velocity_x = 0
+-      
++
+         if keys[pygame.K_d]:
+             self.image = self.right_sprite
+             self.velocity_x = self.speed_x
+@@ -123,14 +146,13 @@ class Player(pygame.sprite.Sprite):
+         if keys[pygame.K_a]:
+             self.image = self.left_sprite
+             self.velocity_x = -self.speed_x
+-        
+-        self.rect.left += self.velocity_x
+ 
++        self.rect.left += self.velocity_x
+ 
+         if self.hits_lava(lava):
+             self.reset()
+             return
+-        
++
+         hits_x_floor = pygame.sprite.spritecollide(self, floor, False)
+ 
+         for block in hits_x_floor:
+@@ -140,7 +162,7 @@ class Player(pygame.sprite.Sprite):
+                 self.rect.right = block.rect.left
+             elif self.velocity_x < 0:
+                 self.rect.left = block.rect.right
+-        
++
+         # РАБОТА С ОСЬЮ Y
+         if keys[pygame.K_w] and self.can_jump:
+             self.velocity_y = self.jump_power
+@@ -162,4 +184,4 @@ class Player(pygame.sprite.Sprite):
+                 self.can_jump = True
+             elif self.velocity_y < 0:
+                 self.rect.top = block.rect.bottom
+-                self.velocity_y = 0
+\ No newline at end of file
++                self.velocity_y = 0
+diff --git a/main.py b/main.py
+index 4d18cc3..16b07c1 100644
+--- a/main.py
++++ b/main.py
+@@ -1,11 +1,14 @@
+ from __future__ import annotations
++
+ import pygame
+-from config import GameConfig, Context
+-from state_manager import StateManager
++
++from config import Context, GameConfig
+ from scenes import Menu
++from state_manager import StateManager
+ 
+ pygame.init()
+ 
++
+ class Game:
+     def __init__(self) -> None:
+         self.game_config: GameConfig = GameConfig()
+@@ -15,7 +18,7 @@ class Game:
+         self.fps: int = self.game_config.fps
+         self.screen: pygame.Surface = pygame.display.set_mode((self.width, self.height))
+         pygame.display.set_caption(self.caption)
+-        self.clock: pygame.time.Clock = pygame.time.Clock()        
++        self.clock: pygame.time.Clock = pygame.time.Clock()
+ 
+         self.context: Context = Context(self.game_config)
+         self.state_manager: StateManager = StateManager()
+@@ -26,7 +29,10 @@ class Game:
+     def run(self) -> None:
+         while self.running:
+             for event in pygame.event.get():
+-                if event.type == pygame.QUIT or len(self.state_manager.stack_state) == 0:
++                if (
++                    event.type == pygame.QUIT
++                    or len(self.state_manager.stack_state) == 0
++                ):
+                     self.running = False
+                 self.state_manager.handle_event(event)
+ 
+@@ -36,6 +42,7 @@ class Game:
+             pygame.display.flip()
+             self.clock.tick(self.fps)
+ 
++
+ if __name__ == "__main__":
+     game = Game()
+     game.run()
+diff --git a/scenes.py b/scenes.py
+index 007b309..33165ff 100644
+--- a/scenes.py
++++ b/scenes.py
+@@ -1,11 +1,14 @@
+ from __future__ import annotations
+-from typing import Callable
+-from state_manager import StateManager, State
+-from config import Context
++
++from collections.abc import Callable
+ 
+ import pygame
++
+ import classes
+ import utils
++from config import Context
++from state_manager import State, StateManager
++
+ 
+ class Menu(State):
+     def __init__(self, manager: StateManager, context: Context) -> None:
+@@ -14,20 +17,33 @@ class Menu(State):
+         self.background: pygame.Surface = utils.load_img("assets/back_menu.png")
+         self.buttons: pygame.sprite.Group[classes.MenuButton] = pygame.sprite.Group()
+         self.buttons_config: list[tuple[str, Callable]] = [
+-            ("start", lambda: self.manager.push(LevelsMenu(self.manager, self.context))),
+-            ("settings", lambda: self.manager.push(SettingsMenu(self.manager, self.context))),
+-            ("Exit", lambda: self.manager.pop())
++            (
++                "start",
++                lambda: self.manager.push(LevelsMenu(self.manager, self.context)),
++            ),
++            (
++                "settings",
++                lambda: self.manager.push(SettingsMenu(self.manager, self.context)),
++            ),
++            ("Exit", lambda: self.manager.pop()),
+         ]
+ 
+-        size_window: tuple[int, int] = self.context.game_config.width, self.context.game_config.height
++        size_window: tuple[int, int] = (
++            self.context.game_config.width,
++            self.context.game_config.height,
++        )
+         size_button: tuple[int, int] = self.context.size_menu_button
+         y_offset: int = -(size_button[1] + self.margin)
+         for button in self.buttons_config:
+-            self.buttons.add(classes.MenuButton(
+-                (size_window[0] // 2 - size_button[0] // 2,
+-                size_window[1] // 2 - size_button[1] // 2 + y_offset),
+-                *button
+-            ))
++            self.buttons.add(
++                classes.MenuButton(
++                    (
++                        size_window[0] // 2 - size_button[0] // 2,
++                        size_window[1] // 2 - size_button[1] // 2 + y_offset,
++                    ),
++                    *button,
++                )
++            )
+             y_offset += size_button[1] + self.margin
+ 
+     def handle_event(self, event: pygame.event.Event) -> None:
+@@ -40,18 +56,21 @@ class Menu(State):
+         screen.blit(self.background, (0, 0))
+         self.buttons.draw(screen)
+ 
++
+ class LevelsMenu(State):
+     def __init__(self, manager: StateManager, context: Context) -> None:
+         super().__init__(manager, context)
+         self.margin_levels_x = 100
+         self.buttons_levels = pygame.sprite.Group()
+-        
+-        for key in self.context.map_levels.keys():
++
++        for key in self.context.map_levels:
+             self.buttons_levels.add(
+                 classes.LevelButton(
+-                    (self.margin_levels_x*int(key), 100),
++                    (self.margin_levels_x * int(key), 100),
+                     key,
+-                    lambda k=key: self.manager.push(Gameplay(self.manager, self.context, k))
++                    lambda k=key: self.manager.push(
++                        Gameplay(self.manager, self.context, k)
++                    ),
+                 )
+             )
+ 
+@@ -67,14 +86,15 @@ class LevelsMenu(State):
+     def draw(self, screen: pygame.Surface) -> None:
+         screen.fill((0, 0, 0))
+         self.buttons_levels.draw(screen)
+-                
++
++
+ class Gameplay(State):
+     def __init__(self, manager: StateManager, context: Context, level: str) -> None:
+         super().__init__(manager, context)
+         self.level = level
+         self.sky = utils.load_img("assets/sky.png")
+         self.platform = pygame.sprite.Group()
+-        self.player = classes.Player("danil", "assets/danil.png", (0,0))
++        self.player = classes.Player("danil", "assets/danil.png", (0, 0))
+         self.load_level()
+ 
+     def handle_event(self, event: pygame.event.Event) -> None:
+@@ -101,7 +121,7 @@ class Gameplay(State):
+     def load_level(self) -> None:
+         level_map = self.context.map_levels[self.level]
+         floors = level_map["floor"]
+-        lavas = level_map["lava"] 
++        lavas = level_map["lava"]
+         for floor in floors:
+             self.platform.add(classes.Floor(floor))
+         for lava in lavas:
+@@ -117,15 +137,17 @@ class Gameplay(State):
+         self.platform.draw(screen)
+         screen.blit(self.player.image, self.player.rect)
+ 
++
+ class SettingsMenu(State):
+     def __init__(self, manager: StateManager, context: Context) -> None:
+         super().__init__(manager, context)
+ 
+     def handle_event(self, event: pygame.event.Event) -> None:
+-        if event.type == pygame.KEYDOWN:
+-            if event.key == pygame.K_q:
+-                self.manager.pop()
++        if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
++            self.manager.pop()
+ 
+     def draw(self, screen: pygame.Surface) -> None:
+         screen.fill((0, 0, 0))
+-        utils.output(screen, "В разработке...", x="сenter", y="сenter", font_color="green")
++        utils.output(
++            screen, "В разработке...", x="сenter", y="сenter", font_color="green"
++        )
+diff --git a/state_manager.py b/state_manager.py
+index e314127..17d5f00 100644
+--- a/state_manager.py
++++ b/state_manager.py
+@@ -1,34 +1,39 @@
+ from __future__ import annotations
++
+ from typing import TYPE_CHECKING
++
+ import pygame
+ 
+ if TYPE_CHECKING:
+     from config import Context
+ 
++
+ class State:
+     def __init__(self, manager: StateManager, context: Context) -> None:
+         """Абстрактный класс который опписывает атрибуты Всех существующих сцен"""
+         self.manager: StateManager = manager
+         self.context: Context = context
+ 
+-    def handle_event(self, event: pygame.event.Event) -> None: 
++    def handle_event(self, event: pygame.event.Event) -> None:
+         pass
+ 
+-    def update(self) -> None: 
++    def update(self) -> None:
+         pass
+ 
+-    def draw(self, screen: pygame.Surface) -> None: 
++    def draw(self, screen: pygame.Surface) -> None:
+         pass
+ 
++
+ class StateManager:
+     def __init__(self) -> None:
+         self.stack_state: list[State] = []
+-    
++
+     @staticmethod
+     def check_stack(func):
+         def wrapper(self, *args, **kwargs):
+             if self.stack_state:
+                 return func(self, *args, **kwargs)
++
+         return wrapper
+ 
+     def push(self, state: State) -> None:
+@@ -37,15 +42,15 @@ class StateManager:
+     @check_stack
+     def pop(self) -> None:
+         self.stack_state.pop()
+-    
++
+     @check_stack
+     def handle_event(self, event: pygame.event.Event) -> None:
+         self.stack_state[-1].handle_event(event)
+-    
++
+     @check_stack
+     def update(self) -> None:
+         self.stack_state[-1].update()
+-    
++
+     @check_stack
+     def draw(self, screen: pygame.Surface) -> None:
+         self.stack_state[-1].draw(screen)
+diff --git a/utils.py b/utils.py
+index cd3877b..2d06aa8 100644
+--- a/utils.py
++++ b/utils.py
+@@ -1,8 +1,10 @@
+-import pygame
+ import json
+ 
++import pygame
++
+ _IMAGE_CACHE = {}
+ 
++
+ def load_map(file_name: str = "level_data.json") -> dict[str, dict]:
+     level_data: dict[str, dict] = {}
+ 
+@@ -12,27 +14,38 @@ def load_map(file_name: str = "level_data.json") -> dict[str, dict]:
+     except FileNotFoundError:
+         level_data = {
+             "1": {
+-                "floor": [[0, 320], [64, 320], [128, 320], [192, 320], [256, 320], [320, 320], [384, 320], [448, 320]], 
+-                "lava": [[256, 320]]
++                "floor": [
++                    [0, 320],
++                    [64, 320],
++                    [128, 320],
++                    [192, 320],
++                    [256, 320],
++                    [320, 320],
++                    [384, 320],
++                    [448, 320],
++                ],
++                "lava": [[256, 320]],
+             }
+         }
+ 
+     return level_data
+ 
++
+ def import_map(platform: list, level: str, file_name: str = "level_data.json") -> None:
+     """Сохраняет отредактированную карту под номер level"""
+     level_map = load_map()
+-    level_map[level] = {"floor":[], "lava":[]}
++    level_map[level] = {"floor": [], "lava": []}
+ 
+     for block in platform:
+         if block.type_block == "floor":
+             level_map[level]["floor"].append(block.rect.topleft)
+         elif block.type_block == "lava":
+             level_map[level]["lava"].append(block.rect.topleft)
+-    
++
+     with open(file_name, "w") as file:
+         json.dump(level_map, file)
+ 
++
+ def load_img(img_path: str, resize: tuple[int, int] | None = None) -> pygame.Surface:
+     key = f"{img_path}_{resize}"
+     if key not in _IMAGE_CACHE:
+@@ -43,23 +56,26 @@ def load_img(img_path: str, resize: tuple[int, int] | None = None) -> pygame.Sur
+ 
+     return _IMAGE_CACHE[key]
+ 
++
+ def middle(width: int, height: int, width2: int, height2: int) -> tuple[int, int]:
+-    return (width//2-width2//2, height//2-height2//2)
++    return (width // 2 - width2 // 2, height // 2 - height2 // 2)
++
+ 
+ def get_img_text(
+-        text: str,
+-        font_color: tuple[int, int, int] | str | None = None,
+-        font_antialias: bool = True,
+-        font_text: str | None = None,
+-        font_size: int = 36
+-    ) -> pygame.Surface:
++    text: str,
++    font_color: tuple[int, int, int] | str | None = None,
++    font_antialias: bool = True,
++    font_text: str | None = None,
++    font_size: int = 36,
++) -> pygame.Surface:
+ 
+     color: tuple[int, int, int] | str | None = font_color if font_color else (255, 0, 0)
+     font: pygame.font.Font = pygame.font.Font(font_text, font_size)
+     text_surface: pygame.Surface = font.render(text, font_antialias, color)
+-    
++
+     return text_surface
+ 
++
+ def output(
+     screen: pygame.Surface,
+     text: str,
