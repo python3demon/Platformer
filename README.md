@@ -1,12 +1,9 @@
-# Platformer
-
 <div align="center">
 
 <img src="assets/logo.png" alt="Logo" width="400">
+<h2>Platformer — Динамичный 2D-платформер с кучей уровней</h2>
 
-**Динамичный 2D-платформер с кучей уровней, монеток и скрытых отсылок!**
-
-[![Version 1.0.0](https://img.shields.io/badge/version-0.2.0--alpha-orange.svg)](https://github.com/python3demon/Platformer)
+[![Version 0.2.0-alpha](https://img.shields.io/badge/version-0.2.0--alpha-orange.svg)](https://github.com/python3demon/Platformer)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg?logo=python&logoColor=white)](https://www.python.org/downloads/latest/python3.14/)
 [![Pygame 2.6.1](https://img.shields.io/badge/pygame-2.6.1-yellow.svg)](https://www.pygame.org/)
 [![Linux](https://img.shields.io/badge/platform-linux-A9A9A9.svg?logo=linux&logoColor=white)](https://linux.org)
@@ -20,16 +17,6 @@
 
 ### Ключевые особенности:
 * **Встроенный Sandbox-редактор**: Стройте свои уровни прямо во время игры и сохраняйте их в один клик.
-
-> [!IMPORTANT]
-> **Текущая версия:** `v0.1.0-dev` (В разработке)  
-> Проект находится на стадии раннего архитектурного прототипа (Alpha). Полностью готова базовая структура игровых экранов, переписан физический движок под новую сетку и встроен визуальный редактор карт для разработчика.
-
-### Что уже сделано в версии `v0.1.0-dev`:
-- **Система экранов (Игровые стейты)**: Полноценное разделение на Главное меню, Выбор уровней, Настройки и Игровой процесс.
-- **Сохранения через JSON**: Автоматическое чтение и запись профиля игрока (`name` и `level`) через файл `data.json`.
-- **Встроенный редактор уровней**: Генерация блоков пола (ЛКМ) и лавы (ПКМ) прямо на лету во время игры с автоматическим экспортом по нажатию `Enter`.
-- **Физический движок 64х64**: Откалиброванные раздельные коллизии по осям X и Y, стабильная гравитация и прыжки без ложных смертей.
 
 ### План разработки (To-Do):
 - [x] Разработка базового прототипа интерфейса: меню, уровни, game (`v0.1.0-alpha`)
