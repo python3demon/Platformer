@@ -1,13 +1,17 @@
 import pygame
 
+_IMAGE_CACHE = {}
+
 
 def load_img(img_path: str, resize: tuple[int, int] | None = None) -> pygame.Surface:
-    img: pygame.Surface = pygame.image.load(img_path).convert_alpha()
+    key = f"{img_path}_{resize}"
+    if key not in _IMAGE_CACHE:
+        img: pygame.Surface = pygame.image.load(img_path).convert_alpha()
+        if resize:
+            img = pygame.transform.scale(img, resize)
+        _IMAGE_CACHE[key] = img
 
-    if resize is not None:
-        img: pygame.Surface = pygame.transform.scale(img, resize)
-
-    return img
+    return _IMAGE_CACHE[key]
 
 
 def middle(width: int, height: int, width2: int, height2: int) -> tuple[int, int]:

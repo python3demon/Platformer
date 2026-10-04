@@ -18,7 +18,7 @@ class Button(pygame.sprite.Sprite):
     ) -> None:
         super().__init__()
 
-        self.image: pygame.Surface = load_img(path)
+        self.image: pygame.Surface = load_img(path).copy()
         self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
         self.text = text
 
