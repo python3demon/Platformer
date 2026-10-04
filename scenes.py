@@ -15,9 +15,8 @@ class Menu(State):
         self.margin: int = 25
         self.background: pygame.Surface = utils.load_img("assets/back_menu.png")
         self.buttons: pygame.sprite.Group = pygame.sprite.Group()
-        center_pos = utils.middle(
-            self.context.game_config.width, self.context.game_config.height, 270, 80
-        )
+        width, height = self.context.game_config.window["size"]
+        center_pos = utils.middle(width, height, 270, 80)
 
         self.start_button = classes.Button(
             "rectangle", (100, 100), "start", font_size=36, font_color=(0, 168, 120)
@@ -123,7 +122,7 @@ class Gameplay(State):
             self.platform.add(classes.Lava(lava))
 
     def update(self) -> None:
-        if self.player.rect.top >= self.context.game_config.height:
+        if self.player.rect.top >= self.context.game_config.window["size"][1]:
             self.player.reset()
         self.player.update(self.platform)
 

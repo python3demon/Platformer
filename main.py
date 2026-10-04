@@ -12,10 +12,9 @@ pygame.init()
 class Game:
     def __init__(self) -> None:
         self.game_config: GameConfig = GameConfig()
-        self.width: int = self.game_config.width
-        self.height: int = self.game_config.height
-        self.caption: str = self.game_config.caption
-        self.fps: int = self.game_config.fps
+        self.width, self.height = self.game_config.window["size"]
+        self.caption = self.game_config.window["caption"]
+        self.fps = self.game_config.window["fps"]
         self.screen: pygame.Surface = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption(self.caption)
         self.clock: pygame.time.Clock = pygame.time.Clock()
@@ -24,7 +23,7 @@ class Game:
         self.state_manager: StateManager = StateManager()
         self.state_manager.push(Menu(self.state_manager, self.context))
 
-        self.running: bool = True
+        self.running = True
 
     def run(self) -> None:
         while self.running:
