@@ -12,34 +12,36 @@ from state_manager import State, StateManager
 class Menu(State):
     def __init__(self, manager: StateManager, context: Context) -> None:
         super().__init__(manager, context)
-        self.margin: int = 25
-        self.background: pygame.Surface = utils.load_img("assets/back_menu.png")
-        self.buttons: pygame.sprite.Group = pygame.sprite.Group()
-        width, height = self.context.game_config.window["size"]
-        center_pos = utils.middle(width, height, 270, 80)
+        self.init_buttons()
 
-        self.start_button = classes.Button(
-            "rectangle", (100, 100), "start", font_size=36, font_color=(0, 168, 120)
-        )
-        self.start_button.rect.left, self.start_button.rect.top = center_pos
-        self.start_button.rect.top = (
-            self.start_button.rect.top - self.start_button.rect.height - self.margin
-        )
+    def init_buttons(self):
+        btn_path = self.context.game_config.imgs["buttons"]["menu"]
+        bg = self.context.game_config.imgs["background_menu_img"]
+        btn_size = pygame.image.load(btn_path).get_size()
+        window_size = self.context.game_config.window["size"]
+        text_color = (0, 168, 120)
+        pos = (100, 100)
+        margin = 25
 
-        self.settings_button = classes.Button(
-            "rectangle", (100, 100), "settings", font_size=36, font_color=(0, 168, 120)
-        )
-        self.settings_button.rect.left, self.settings_button.rect.top = center_pos
+        self.background = utils.load_img(bg)
+        self.buttons = pygame.sprite.Group()
 
-        self.exit_button = classes.Button(
-            "rectangle", (100, 100), "Shop", font_size=36, font_color=(0, 168, 120)
-        )
-        self.exit_button.rect.left, self.exit_button.rect.top = center_pos
-        self.exit_button.rect.top = (
-            self.exit_button.rect.top + self.exit_button.rect.height + self.margin
+        center_pos = utils.middle(
+            window_size[0], window_size[1], btn_size[0], btn_size[1]
         )
 
-        self.buttons.add(self.start_button, self.settings_button, self.exit_button)
+        start = classes.Button(btn_path, pos, "start", text_color)
+        settings = classes.Button(btn_path, pos, "settings", text_color)
+        shop = classes.Button(btn_path, pos, "shop", text_color)
+
+        start.rect.left, start.rect.top = center_pos
+        start.rect.top = start.rect.top - start.rect.height - margin
+        settings.rect.left, settings.rect.top = center_pos
+
+        shop.rect.left, shop.rect.top = center_pos
+        shop.rect.top = shop.rect.top + shop.rect.height + margin
+
+        self.buttons.add(start, settings, shop)
 
     def handle_event(self, event: pygame.event.Event) -> None:
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -49,7 +51,7 @@ class Menu(State):
                         self.manager.push(LevelsMenu(self.manager, self.context))
                     elif button.text == "settings":
                         self.manager.push(SettingsMenu(self.manager, self.context))
-                    elif button.text == "Shop":
+                    elif button.text == "shop":
                         pass
 
     def draw(self, screen: pygame.Surface) -> None:
@@ -58,16 +60,21 @@ class Menu(State):
 
 
 class LevelsMenu(State):
-    def __init__(self, manager: StateManager, context: Context) -> None:
+    def __init__(self, manager: StateManager, context: Context):
         super().__init__(manager, context)
-        self.margin_levels_x: int = 100
+        self.init_buttons()
+
+    def init_buttons(self):
+        btn_path = self.context.game_config.imgs["buttons"]["level"]
+
+        margin_levels_x: int = 100
         self.buttons_levels: pygame.sprite.Group = pygame.sprite.Group()
         for key in self.context.map_levels:
             self.buttons_levels.add(
-                classes.Button("rect", (self.margin_levels_x * key, 100), str(key))
+                classes.Button(btn_path, (margin_levels_x * key, 100), str(key))
             )
 
-    def handle_event(self, event: pygame.event.Event) -> None:
+    def handle_event(self, event: pygame.event.Event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
             self.manager.pop()
         elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -77,21 +84,23 @@ class LevelsMenu(State):
                         Gameplay(self.manager, self.context, int(button.text))
                     )
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: pygame.Surface):
         screen.fill((0, 0, 0))
         self.buttons_levels.draw(screen)
 
 
 class Gameplay(State):
-    def __init__(self, manager: StateManager, context: Context, level: int) -> None:
+    def __init__(self, manager: StateManager, context: Context, level: int):
         super().__init__(manager, context)
-        self.level: int = level
-        self.sky: pygame.Surface = utils.load_img("assets/sky.png")
+        self.level = level
+        self.sky = utils.load_img(self.context.game_config.imgs["background_game_img"])
         self.platform: pygame.sprite.Group = pygame.sprite.Group()
-        self.player = classes.Player("danil", "assets/danil.png", (0, 0))
+        self.player = classes.Player(
+            self.context.current_skin.split("/")[1], self.context.current_skin, (0, 0)
+        )
         self.load_level()
 
-    def handle_event(self, event: pygame.event.Event) -> None:
+    def handle_event(self, event: pygame.event.Event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_q:
                 self.manager.pop()
@@ -112,7 +121,7 @@ class Gameplay(State):
             else:
                 self.platform.add(classes.Lava((x, y)))
 
-    def load_level(self) -> None:
+    def load_level(self):
         level_map = self.context.map_levels[self.level]
         floors = level_map["floor"]
         lavas = level_map["lava"]
@@ -121,26 +130,26 @@ class Gameplay(State):
         for lava in lavas:
             self.platform.add(classes.Lava(lava))
 
-    def update(self) -> None:
+    def update(self):
         if self.player.rect.top >= self.context.game_config.window["size"][1]:
             self.player.reset()
         self.player.update(self.platform)
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: pygame.Surface):
         screen.blit(self.sky, (0, 0))
         self.platform.draw(screen)
         screen.blit(self.player.image, self.player.rect)
 
 
 class SettingsMenu(State):
-    def __init__(self, manager: StateManager, context: Context) -> None:
+    def __init__(self, manager: StateManager, context: Context):
         super().__init__(manager, context)
 
-    def handle_event(self, event: pygame.event.Event) -> None:
+    def handle_event(self, event: pygame.event.Event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
             self.manager.pop()
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen: pygame.Surface):
         screen.fill((0, 0, 0))
         utils.output(
             screen, "В разработке...", x="сenter", y="сenter", font_color="green"

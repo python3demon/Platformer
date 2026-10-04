@@ -8,7 +8,7 @@ from utils import get_img_text, load_img, middle
 class Button(pygame.sprite.Sprite):
     def __init__(
         self,
-        type_button: str,
+        path: str,
         pos: tuple[int, int],
         text: str,
         font_color: tuple[int, int, int] | str | None = None,
@@ -18,12 +18,12 @@ class Button(pygame.sprite.Sprite):
     ) -> None:
         super().__init__()
 
-        self.image: pygame.Surface = load_img(f"assets/{type_button}.png")
+        self.image: pygame.Surface = load_img(path)
         self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
         self.text = text
 
         color = font_color if font_color else (255, 0, 0)
-        text_image: pygame.Surface = get_img_text(
+        text_image = get_img_text(
             self.text, color, font_antialias, font_text, font_size
         )
         text_pos: tuple[int, int] = middle(*self.rect.size, *text_image.get_size())
