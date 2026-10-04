@@ -71,7 +71,7 @@ class LevelsMenu(State):
         self.buttons_levels: pygame.sprite.Group = pygame.sprite.Group()
         for key in self.context.map_levels:
             self.buttons_levels.add(
-                classes.Button(btn_path, (margin_levels_x * key, 100), str(key))
+                classes.Button(btn_path, (margin_levels_x * int(key), 100), key)
             )
 
     def handle_event(self, event: pygame.event.Event):
@@ -80,9 +80,7 @@ class LevelsMenu(State):
         elif event.type == pygame.MOUSEBUTTONDOWN:
             for button in self.buttons_levels:
                 if button.rect.collidepoint(event.pos):
-                    self.manager.push(
-                        Gameplay(self.manager, self.context, int(button.text))
-                    )
+                    self.manager.push(Gameplay(self.manager, self.context, button.text))
 
     def draw(self, screen: pygame.Surface):
         screen.fill((0, 0, 0))
@@ -90,7 +88,7 @@ class LevelsMenu(State):
 
 
 class Gameplay(State):
-    def __init__(self, manager: StateManager, context: Context, level: int):
+    def __init__(self, manager: StateManager, context: Context, level: str):
         super().__init__(manager, context)
         self.level = level
         self.sky = utils.load_img(self.context.game_config.imgs["background_game_img"])
