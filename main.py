@@ -11,16 +11,16 @@ pygame.init()
 
 class Game:
     def __init__(self) -> None:
-        self.game_config: GameConfig = GameConfig()
+        self.game_config = GameConfig()
         self.width, self.height = self.game_config.window["size"]
         self.caption = self.game_config.window["caption"]
         self.fps = self.game_config.window["fps"]
-        self.screen: pygame.Surface = pygame.display.set_mode((self.width, self.height))
+        self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption(self.caption)
-        self.clock: pygame.time.Clock = pygame.time.Clock()
+        self.clock = pygame.time.Clock()
 
-        self.context: Context = Context(self.game_config)
-        self.state_manager: StateManager = StateManager()
+        self.context = Context(self.game_config)
+        self.state_manager = StateManager()
         self.state_manager.push(Menu(self.state_manager, self.context))
 
         self.running = True

@@ -43,7 +43,7 @@ class Menu(State):
 
         self.buttons.add(start, settings, shop)
 
-    def handle_event(self, event: pygame.event.Event) -> None:
+    def handle_event(self, event: pygame.event.Event):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             for button in self.buttons:
                 if button.rect.collidepoint(event.pos):
@@ -54,7 +54,7 @@ class Menu(State):
                     elif button.text == "shop":
                         pass
 
-    def draw(self, screen: pygame.Surface) -> None:
+    def draw(self, screen):
         screen.blit(self.background, (0, 0))
         self.buttons.draw(screen)
 
@@ -67,8 +67,8 @@ class LevelsMenu(State):
     def init_buttons(self):
         btn_path = self.context.game_config.imgs["buttons"]["level"]
 
-        margin_levels_x: int = 100
-        self.buttons_levels: pygame.sprite.Group = pygame.sprite.Group()
+        margin_levels_x = 100
+        self.buttons_levels = pygame.sprite.Group()
         for key in self.context.map_levels:
             self.buttons_levels.add(
                 classes.Button(btn_path, (margin_levels_x * int(key), 100), key)
@@ -92,7 +92,7 @@ class Gameplay(State):
         super().__init__(manager, context)
         self.level = level
         self.sky = utils.load_img(self.context.game_config.imgs["background_game_img"])
-        self.platform: pygame.sprite.Group = pygame.sprite.Group()
+        self.platform = pygame.sprite.Group()
         self.player = classes.Player(
             self.context.current_skin.split("/")[1], self.context.current_skin, (0, 0)
         )
@@ -133,7 +133,7 @@ class Gameplay(State):
             self.player.reset()
         self.player.update(self.platform)
 
-    def draw(self, screen: pygame.Surface):
+    def draw(self, screen):
         screen.blit(self.sky, (0, 0))
         self.platform.draw(screen)
         screen.blit(self.player.image, self.player.rect)
@@ -147,7 +147,7 @@ class SettingsMenu(State):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
             self.manager.pop()
 
-    def draw(self, screen: pygame.Surface):
+    def draw(self, screen):
         screen.fill((0, 0, 0))
         utils.output(
             screen, "В разработке...", x="сenter", y="сenter", font_color="green"

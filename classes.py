@@ -15,11 +15,11 @@ class Button(pygame.sprite.Sprite):
         font_antialias: bool = True,
         font_text: str | None = None,
         font_size: int = 36,
-    ) -> None:
+    ):
         super().__init__()
 
-        self.image: pygame.Surface = load_img(path).copy()
-        self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
+        self.image = load_img(path).copy()
+        self.rect = pygame.Rect(*pos, *self.image.get_size())
         self.text = text
 
         color = font_color if font_color else (255, 0, 0)
@@ -32,11 +32,11 @@ class Button(pygame.sprite.Sprite):
 
 
 class Block(pygame.sprite.Sprite):
-    def __init__(self, pos: tuple[int, int], type_block: str) -> None:
+    def __init__(self, pos: tuple[int, int], type_block: str):
         super().__init__()
-        self.type_block: str = type_block
-        self.image: pygame.Surface = load_img(f"assets/{type_block}.png")
-        self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
+        self.type_block = type_block
+        self.image = load_img(f"assets/{type_block}.png")
+        self.rect = pygame.Rect(*pos, *self.image.get_size())
 
 
 class Floor(Block):
@@ -56,34 +56,32 @@ class Player(pygame.sprite.Sprite):
         path_to_img: str,
         pos: tuple[int, int],
         resize: tuple[int, int] = (48, 96),
-    ) -> None:
+    ):
         super().__init__()
-        self.name: str = name
-        self.left_sprite: pygame.Surface = load_img(path_to_img, resize)
-        self.right_sprite: pygame.Surface = pygame.transform.flip(
-            self.left_sprite, True, False
-        )
-        self.image: pygame.Surface = self.left_sprite
-        self.rect: pygame.Rect = pygame.Rect(*pos, *self.image.get_size())
-        self.speed_x: int = 6
-        self.velocity_x: int = 0  # текущая скорость по оси X
-        self.velocity_y: int = 0  # текущая скорость по оси Y
-        self.gravity: int = 1
-        self.jump_power: int = -14
-        self.can_jump: bool = True
+        self.name = name
+        self.left_sprite = load_img(path_to_img, resize)
+        self.right_sprite = pygame.transform.flip(self.left_sprite, True, False)
+        self.image = self.left_sprite
+        self.rect = pygame.Rect(*pos, *self.image.get_size())
+        self.speed_x = 6
+        self.velocity_x = 0  # текущая скорость по оси X
+        self.velocity_y = 0  # текущая скорость по оси Y
+        self.gravity = 1
+        self.jump_power = -14
+        self.can_jump = True
 
-    def reset(self) -> None:
+    def reset(self):
         self.rect.left = 0
         self.rect.bottom = 100
 
-    def hits_lava(self, lava: pygame.sprite.Group) -> bool:
+    def hits_lava(self, lava: pygame.sprite.Group):
         if pygame.sprite.spritecollide(self, lava, False):
             return True
         return False
 
-    def update(self, platform: pygame.sprite.Group) -> None:
-        floor: pygame.sprite.Group = pygame.sprite.Group()
-        lava: pygame.sprite.Group = pygame.sprite.Group()
+    def update(self, platform: pygame.sprite.Group):
+        floor = pygame.sprite.Group()
+        lava = pygame.sprite.Group()
 
         for block in platform:
             if block.type_block == "floor":

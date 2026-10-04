@@ -27,8 +27,8 @@ def get_img_text(
 ) -> pygame.Surface:
 
     color: tuple[int, int, int] | str | None = font_color if font_color else (255, 0, 0)
-    font: pygame.font.Font = pygame.font.Font(font_text, font_size)
-    text_surface: pygame.Surface = font.render(text, font_antialias, color)
+    font = pygame.font.Font(font_text, font_size)
+    text_surface = font.render(text, font_antialias, color)
 
     return text_surface
 
