@@ -15,24 +15,23 @@ class Menu(State):
         self.init_buttons()
 
     def init_buttons(self):
-        btn_path = self.context.game_config.imgs["buttons"]["menu"]
-        bg = self.context.game_config.imgs["background_menu_img"]
-        btn_size = pygame.image.load(btn_path).get_size()
-        window_size = self.context.game_config.window["size"]
-        text_color = (0, 168, 120)
+        btn_img: pygame.Surface = self.context.game_config.PATHS["btn_menu"]
+        self.background: pygame.Surface = self.context.game_config.PATHS["bg_menu"]
+        window_size = self.context.game_config.WIDTH, self.context.game_config.HEIGHT
+
+        btn_size = btn_img.get_size()
         pos = (100, 100)
-        margin = 25
-
-        self.background = utils.load_img(bg)
-        self.buttons = pygame.sprite.Group()
-
         center_pos = utils.middle(
             window_size[0], window_size[1], btn_size[0], btn_size[1]
         )
+        margin = 25
+        text_color = (0, 168, 120)
 
-        start = classes.Button(btn_path, pos, "start", text_color)
-        settings = classes.Button(btn_path, pos, "settings", text_color)
-        shop = classes.Button(btn_path, pos, "shop", text_color)
+        self.buttons = pygame.sprite.Group()
+
+        start = classes.Button(btn_img, pos, "start", text_color)
+        settings = classes.Button(btn_img, pos, "settings", text_color)
+        shop = classes.Button(btn_img, pos, "shop", text_color)
 
         start.rect.left, start.rect.top = center_pos
         start.rect.top = start.rect.top - start.rect.height - margin
@@ -65,13 +64,13 @@ class LevelsMenu(State):
         self.init_buttons()
 
     def init_buttons(self):
-        btn_path = self.context.game_config.imgs["buttons"]["level"]
+        btn_img: pygame.Surface = self.context.game_config.PATHS["btn_level"]
 
         margin_levels_x = 100
         self.buttons_levels = pygame.sprite.Group()
         for key in self.context.map_levels:
             self.buttons_levels.add(
-                classes.Button(btn_path, (margin_levels_x * int(key), 100), key)
+                classes.Button(btn_img, (margin_levels_x * int(key), 100), key)
             )
 
     def handle_event(self, event: pygame.event.Event):
@@ -91,10 +90,12 @@ class Gameplay(State):
     def __init__(self, manager: StateManager, context: Context, level: str):
         super().__init__(manager, context)
         self.level = level
-        self.sky = utils.load_img(self.context.game_config.imgs["background_game_img"])
+        self.sky: pygame.Surface = self.context.game_config.PATHS["bg_game"]
         self.platform = pygame.sprite.Group()
         self.player = classes.Player(
-            self.context.current_skin.split("/")[1], self.context.current_skin, (0, 0)
+            self.context.current_skin["name"],
+            self.context.current_skin["image"],
+            (0, 0),
         )
         self.load_level()
 
@@ -129,7 +130,7 @@ class Gameplay(State):
             self.platform.add(classes.Lava(lava))
 
     def update(self):
-        if self.player.rect.top >= self.context.game_config.window["size"][1]:
+        if self.player.rect.top >= self.context.game_config.HEIGHT:
             self.player.reset()
         self.player.update(self.platform)
 

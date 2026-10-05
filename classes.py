@@ -8,7 +8,7 @@ from utils import get_img_text, load_img, middle
 class Button(pygame.sprite.Sprite):
     def __init__(
         self,
-        path: str,
+        image: pygame.Surface,
         pos: tuple[int, int],
         text: str,
         font_color: tuple[int, int, int] | str | None = None,
@@ -18,7 +18,7 @@ class Button(pygame.sprite.Sprite):
     ):
         super().__init__()
 
-        self.image = load_img(path).copy()
+        self.image = image.copy()
         self.rect = pygame.Rect(*pos, *self.image.get_size())
         self.text = text
 
@@ -53,13 +53,12 @@ class Player(pygame.sprite.Sprite):
     def __init__(
         self,
         name: str,
-        path_to_img: str,
+        image: pygame.Surface,
         pos: tuple[int, int],
-        resize: tuple[int, int] = (48, 96),
     ):
         super().__init__()
         self.name = name
-        self.left_sprite = load_img(path_to_img, resize)
+        self.left_sprite = image
         self.right_sprite = pygame.transform.flip(self.left_sprite, True, False)
         self.image = self.left_sprite
         self.rect = pygame.Rect(*pos, *self.image.get_size())

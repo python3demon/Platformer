@@ -1,25 +1,6 @@
 {
     "window": {
-        "size": [832, 640],
-        "caption": "My Platformer",
         "fps": 60
-    },
-    "imgs": {
-        "default_skin": "assets/danil.png",
-        "background_menu_img": "assets/back_menu.png",
-        "background_game_img": "assets/sky.png",
-        "buttons": {
-            "menu": "assets/rectangle.png",
-            "level": "assets/rect.png"
-        }
-    },
-    "block": {
-        "solids": {
-            "floor": "assets/floor.png"
-        },
-        "triggers": {
-            "lava": "assets/lava.png"
-        }
     },
     "settings": {
         "can_edit_map": true
